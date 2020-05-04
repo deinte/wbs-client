@@ -1,0 +1,14 @@
+div.panel-body .list-item {
+    padding: 14px 0;
+}
+.icon.mdi:hover {
+    color: var(--btn-bg);
+    transition: 0.5s all ease-in-out;
+    cursor: pointer;
+}
+button:hover {
+    --btn-hover: 1;
+}
+h1.panel-title {
+    margin-bottom: 0;
+}
