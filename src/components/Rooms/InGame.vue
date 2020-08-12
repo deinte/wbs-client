@@ -5,36 +5,33 @@
                 <div class="panel-header">
                     <h1 class="panel-title">
                         {{ currentRoom.roomName }}
-                        <button class="btn btn-contained btn-primary btn-icon" v-clipboard:copy="currentLink"
-                                v-clipboard:success="onCopy"><i class="mdi mdi-link-variant"></i></button>
                     </h1>
                 </div>
-                <div class="panel-body">
-                    <div class="list">
-                        <label class="list-item" v-for="player in currentRoom.players" v-bind:key="player">
-                            <latte-initials :initials="getInitials(player.username)"
-                                            class="avatar radius-squircle avatar-48px list-item-prefix"></latte-initials>
-                            <div class="list-item-caption">
-                                <strong>{{ player.username }}</strong>
-                                <span class="text-soft">Extra informatie</span>
-                            </div>
-                            <span>
-                                punten
-                            </span>
-                        </label>
-                    </div>
-
+                <div class="list">
+                    <label class="list-item" v-for="player in currentRoom.players" v-bind:key="player">
+                        <latte-initials :initials="getInitials(player.username)"
+                                        class="avatar radius-squircle avatar-48px list-item-prefix"></latte-initials>
+                        <div class="list-item-caption">
+                            <strong>{{ player.username }}</strong>
+                            <span class="text-soft">Extra informatie</span>
+                        </div>
+                        <span>punten</span>
+                    </label>
+                </div>
+                <div class="btn-group">
+                    <latte-ripple as="button" class="ce-ripple btn btn-pill btn-contained btn-primary"
+                                  v-clipboard:copy="currentLink" v-clipboard:success="onCopy">
+                        <i class="mdi mdi-link-variant"></i><span>Kopieer link</span>
+                    </latte-ripple>
                 </div>
             </div>
             <div class="panel" v-if="currentRoom.roomOwner === currentPlayer.username">
                 <div class="panel-header">
                     <span class="panel-title">Kamer Eigenaar</span>
                 </div>
-                <div class="panel-body">
-                    <p>Info :D</p>
-                </div>
                 <div class="btn-group">
-                    <latte-ripple as="button" class="ce-ripple btn btn-pill btn-contained btn-primary" @click="startGame">
+                    <latte-ripple as="button" class="ce-ripple btn btn-pill btn-contained btn-primary"
+                                  @click="startGame">
                         <i class="mdi mdi-play"></i><span>Start spel</span>
                     </latte-ripple>
                 </div>
@@ -60,14 +57,14 @@
                     </form>
                 </div>
             </div>
-            <div class="panel" v-else-if="state === 'addMeaning'">
+            <div class="panel" v-else-if="state === 'submitMeaning'">
                 <div class="panel-header">
                     <h1 class="panel-title">
                         Wat betekent het woord {{ currentWord }}
                     </h1>
                 </div>
                 <div class="panel-body">
-                    <form @submit.prevent="addMeaning">
+                    <form @submit.prevent="submitMeaning">
                         <div class="form-group">
                             <label>Wat is de betekenis?</label>
                             <input type="text" class="form-control" v-model="meaning">
@@ -121,8 +118,8 @@
             },
             async wordSubmitted(data) {
                 this.currentWord = data.word;
-                if(this.currentPlayer.username !== data.playerUsername) {
-                    this.state = 'addMeaning';
+                if (this.currentPlayer.username !== data.playerUsername) {
+                    this.state = 'submitMeaning';
                     await this.$latte.ui.snackbar.create({
                         message: "Wat betekent het woord \"" + this.currentWord + "\" volgens jou?"
                     });
@@ -135,7 +132,7 @@
             },
             async newTurn(data) {
                 console.log(this.currentPlayer.username + data);
-                if(this.currentPlayer.username === data) {
+                if (this.currentPlayer.username === data) {
                     this.state = 'myTurn';
                     await this.$latte.ui.snackbar.create({
                         message: "Jouw beurt, kies een woord en vul de beschrijving in."
@@ -161,7 +158,7 @@
                 }
             },
             async startGame() {
-                if(this.currentPlayers.length >= 3) {
+                if (this.currentPlayers.length >= 3) {
                     console.log("Start spel");
                     this.$socket.emit('startGame', this.$store.state.currentRoom);
                 } else {
@@ -171,7 +168,7 @@
                 }
             },
             async submitWord() {
-                if(this.meaning !== null && this.word !== null) {
+                if (this.meaning !== null && this.word !== null) {
                     this.$socket.emit('submitWord', {
                         data: {
                             roomName: this.currentRoom.roomName,
@@ -196,12 +193,13 @@
              * Checks if field 'Meaning' is filled in and sends emit to server
              * Else we're sending the player a error message
              */
-            async addMeaning() {
-                if(this.meaning !== null) {
-                    this.$socket.emit('addMeaning', {
+            async submitMeaning() {
+                if (this.meaning !== null) {
+                    this.$socket.emit('submitMeaning', {
                         meaning: this.meaning,
-                        username: this.currentPlayer.username
-                    })
+                        username: this.currentPlayer.username,
+                        roomName: this.currentRoom.roomName
+                    });
                     this.state = null;
                 } else {
                     await this.$latte.ui.notification.create({
